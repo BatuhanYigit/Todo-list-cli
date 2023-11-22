@@ -7,5 +7,5 @@ import (
 func main() {
 
 	helper.WelcomeMessage()
-
+	helper.FileCreate()
 }
