@@ -8,5 +8,6 @@ func WelcomeMessage() {
 	fmt.Println("1 - List All")
 	fmt.Println("2 - Add Todo")
 	fmt.Println("3 - Edit Todo")
-	fmt.Println("4 - Delete Todo")
+	fmt.Println("4 - Detail Todo")
+	fmt.Println("5 - Delete Todo")
 }
