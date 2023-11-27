@@ -15,7 +15,6 @@ type TodoCreate struct {
 }
 
 func FileCreate() {
-	//Delete print create
 	filePath := "./todos.txt"
 
 	if _, err := os.Stat(filePath); os.IsNotExist(err) {
@@ -31,7 +30,7 @@ func FileCreate() {
 
 	} else {
 
-		fmt.Println("Todos List Ready")
+		fmt.Println("todos.txt control OK")
 	}
 
 }
@@ -55,17 +54,6 @@ func CreateTodo(todo TodoCreate) error {
 		return err
 	}
 
-	// writer := bufio.NewWriter(file)
-	// for _, todo := range todos {
-	// 	line := fmt.Sprintf("%d:%s:%s\n", todo.ID, todo.Content, todo.Status)
-
-	// 	_, err := writer.WriteString(line)
-	// 	if err != nil {
-	// 		return err
-	// 	}
-	// }
-
-	// writer.Flush()
 	return nil
 
 }
@@ -109,6 +97,59 @@ func ListTodo() ([]TodoCreate, error) {
 	return todos, nil
 }
 
+func EditTodoStatus(todoId string, newStatus string) error {
+	filePath := "./todos.txt"
+
+	file, err := os.OpenFile(filePath, os.O_RDWR, 0644)
+	if err != nil {
+		fmt.Println("file not open", err)
+	}
+	defer file.Close()
+
+	var updatedLines []string
+
+	scanner := bufio.NewScanner(file)
+	for scanner.Scan() {
+		line := scanner.Text()
+
+		if strings.Contains(line, todoId) {
+			parts := strings.Split(line, ":")
+			if len(parts) == 3 {
+				parts[2] = newStatus
+				line = strings.Join(parts, ":")
+			}
+		}
+		updatedLines = append(updatedLines, line)
+	}
+	if err := scanner.Err(); err != nil {
+		fmt.Println("file read error: ", err)
+		return err
+	}
+
+	if err := file.Truncate(0); err != nil {
+		fmt.Println("file truncate error: ", err)
+		return err
+	}
+
+	if _, err := file.Seek(0, 0); err != nil {
+		fmt.Println("file seek error: ", err)
+		return err
+	}
+
+	writer := bufio.NewWriter(file)
+
+	for _, line := range updatedLines {
+		_, err := writer.WriteString(line + "\n")
+		if err != nil {
+			fmt.Println("file write error: ", err)
+			return err
+		}
+
+	}
+	writer.Flush()
+	return nil
+}
+
 func DetailTodo(todoId string) {
 
 	filePath := "./todos.txt"
@@ -140,4 +181,57 @@ func PrintTodo(todos []TodoCreate) {
 	for _, todo := range todos {
 		fmt.Printf("Todo Id : %d Content :  %s Status : %s\n", todo.ID, todo.Content, todo.Status)
 	}
+}
+
+func IsValidStatus(status string, validOptions []string) bool {
+	for _, option := range validOptions {
+		if strings.ToLower(status) == option {
+			return true
+		}
+	}
+	return false
+}
+
+func DeleteTodoByID(todoId string) error {
+	filePath := "./todos.txt"
+
+	file, err := os.OpenFile(filePath, os.O_RDWR, 0644)
+	if err != nil {
+		return err
+	}
+	defer file.Close()
+
+	var updatedLines []string
+
+	scanner := bufio.NewScanner(file)
+	for scanner.Scan() {
+		line := scanner.Text()
+
+		if !strings.Contains(line, todoId) {
+			updatedLines = append(updatedLines, line)
+		}
+	}
+
+	if err := scanner.Err(); err != nil {
+		return err
+	}
+
+	if err := file.Truncate(0); err != nil {
+		return err
+	}
+
+	if _, err := file.Seek(0, 0); err != nil {
+		return err
+	}
+
+	writer := bufio.NewWriter(file)
+	for _, line := range updatedLines {
+		_, err := writer.WriteString(line + "\n")
+		if err != nil {
+			return err
+		}
+	}
+
+	writer.Flush()
+	return nil
 }

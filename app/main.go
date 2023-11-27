@@ -8,7 +8,8 @@ import (
 
 func main() {
 	for {
-		// helper.FileCreate()
+
+		helper.FileCreate()
 		helper.WelcomeMessage()
 
 		fmt.Println("Select choice : ")
@@ -71,12 +72,46 @@ func main() {
 
 		}
 
+		if choice == 3 {
+			validStatusOptions := []string{"todo", "in progress", "done"}
+
+			fmt.Print("Write Edit Todo ID : ")
+			var todoId string
+			fmt.Scanln(&todoId)
+			helper.DetailTodo(todoId)
+
+			fmt.Print("Edit status choice (todo,in progress,done) : ")
+			var todoStatus string
+			fmt.Scanln(&todoStatus)
+			if helper.IsValidStatus(todoStatus, validStatusOptions) {
+				helper.EditTodoStatus(todoId, todoStatus)
+				fmt.Println("Status Update")
+
+			} else {
+				fmt.Println("Invalid status please choice (todo,in progress, done) your choice = ", todoStatus)
+			}
+
+		}
+
 		if choice == 4 {
 			fmt.Print("Write Todo ID : ")
 			var todoId string
 			fmt.Scanln(&todoId)
 
 			helper.DetailTodo(todoId)
+		}
+
+		if choice == 5 {
+			fmt.Print("Delete Todo ID : ")
+			var todoId string
+			fmt.Scanln(&todoId)
+
+			err := helper.DeleteTodoByID(todoId)
+			if err != nil {
+				fmt.Println("Error deleting todo ", err)
+			} else {
+				fmt.Println("Todo Deleted id : ", todoId)
+			}
 		}
 	}
 }
