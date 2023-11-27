@@ -3,12 +3,16 @@ package helper
 import (
 	"bufio"
 	"fmt"
-	"math/rand"
 	"os"
 	"strconv"
 	"strings"
-	"time"
 )
+
+type TodoCreate struct {
+	ID      int
+	Content string
+	Status  string
+}
 
 func FileCreate() {
 	//Delete print create
@@ -32,55 +36,80 @@ func FileCreate() {
 
 }
 
-func CreateTodo(todo string) error {
+func CreateTodo(todo TodoCreate) error {
+
 	// TODO: Update todoId uniq id
-	rand.Seed(time.Now().UnixNano())
-
-	todoId := rand.Intn(101)
-
 	filePath := "./todos.txt"
-	file, err := os.OpenFile(filePath, os.O_WRONLY|os.O_APPEND|os.O_CREATE, 0644)
+
+	file, err := os.OpenFile(filePath, os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0755)
 	if err != nil {
-		return fmt.Errorf("file not open : %v", err)
+		return err
 	}
+
 	defer file.Close()
 
-	_, err = file.Write([]byte(todo + " " + strconv.Itoa(todoId) + "\n"))
+	line := fmt.Sprintf("%d:%s:%s\n", todo.ID, todo.Content, todo.Status)
 
+	_, err = file.WriteString(line)
 	if err != nil {
-		return fmt.Errorf("file not write : %v", err)
+		return err
 	}
 
-	fmt.Println("File write success : ", filePath)
+	// writer := bufio.NewWriter(file)
+	// for _, todo := range todos {
+	// 	line := fmt.Sprintf("%d:%s:%s\n", todo.ID, todo.Content, todo.Status)
+
+	// 	_, err := writer.WriteString(line)
+	// 	if err != nil {
+	// 		return err
+	// 	}
+	// }
+
+	// writer.Flush()
 	return nil
+
 }
 
-func ListTodo() error {
-	//TODO: Add todo list column todoname todoid
+func ListTodo() ([]TodoCreate, error) {
 	filePath := "./todos.txt"
 
 	file, err := os.Open(filePath)
 	if err != nil {
-		return fmt.Errorf("file not open : %v", err)
+		fmt.Println("file not open", err)
+		return nil, err
 	}
 	defer file.Close()
-
+	var todos []TodoCreate
 	reader := bufio.NewScanner(file)
 
 	for reader.Scan() {
 		line := reader.Text()
-		fmt.Println(line)
+		parts := strings.Split(line, ":")
+
+		id, err := strconv.Atoi(strings.TrimSpace(parts[0]))
+		if err != nil {
+			fmt.Println("Error converting ID to integer:", err)
+			continue
+		}
+
+		todo := TodoCreate{
+			ID:      id,
+			Content: strings.TrimSpace(parts[1]),
+			Status:  strings.TrimSpace(parts[2]),
+		}
+
+		todos = append(todos, todo)
 	}
 
 	if err := reader.Err(); err != nil {
-		fmt.Println("Dosya okunurken hata oluştu:", err)
+		fmt.Println("file read error: ", err)
+		return nil, err
 	}
 
-	return nil
-
+	return todos, nil
 }
 
-func DetailTodo(todoId string) error {
+func DetailTodo(todoId string) {
 
 	filePath := "./todos.txt"
 
@@ -104,6 +133,11 @@ func DetailTodo(todoId string) error {
 		fmt.Println("file read error: ", err)
 	}
 
-	return nil
+}
 
+func PrintTodo(todos []TodoCreate) {
+	fmt.Println("Todo List : ")
+	for _, todo := range todos {
+		fmt.Printf("Todo Id : %d Content :  %s Status : %s\n", todo.ID, todo.Content, todo.Status)
+	}
 }
