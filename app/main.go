@@ -1,8 +1,10 @@
 package main
 
 import (
+	"bufio"
 	"fmt"
 	"os"
+	"strings"
 	"todolist/helper"
 )
 
@@ -30,6 +32,7 @@ func main() {
 			}
 
 		case 2:
+			validStatusOptions := []string{"todo", "in progress", "done"}
 			filePath := "todos.txt"
 			file, err := os.OpenFile(filePath, os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0755)
 			if err != nil {
@@ -43,28 +46,36 @@ func main() {
 				fmt.Println("Todo List Not Read : ", err)
 			}
 			fmt.Print("Write todo names : ")
-			var todoName string
-			fmt.Scanln(&todoName)
-			fmt.Print("Write todo status : ")
-			var status string
-			fmt.Scanln(&status)
+			todoName, _ := bufio.NewReader(os.Stdin).ReadString('\n')
 
-			id := len(todos) + 1
-			create := helper.TodoCreate{
-				ID:      id,
-				Content: todoName,
-				Status:  status,
+			fmt.Print("Write todo status choice (todo,in progress,done) :  ")
+			status, _ := bufio.NewReader(os.Stdin).ReadString('\n')
+
+			todoName = strings.TrimSpace(todoName)
+			status = strings.TrimSpace(status)
+
+			if helper.IsValidStatus(status, validStatusOptions) {
+
+				id := len(todos) + 1
+				create := helper.TodoCreate{
+					ID:      id,
+					Content: todoName,
+					Status:  status,
+				}
+
+				todos = append(todos, create)
+
+				err = helper.CreateTodo(create)
+				if err != nil {
+					fmt.Println("Todo not create ", err)
+					return
+				}
+
+				helper.PrintTodo(todos)
+
+			} else {
+				fmt.Println("Invalid status please choice (todo,in progress, done) your choice = ", status)
 			}
-
-			todos = append(todos, create)
-
-			err = helper.CreateTodo(create)
-			if err != nil {
-				fmt.Println("Todo not create ", err)
-				return
-			}
-
-			helper.PrintTodo(todos)
 
 		case 3:
 			validStatusOptions := []string{"todo", "in progress", "done"}
