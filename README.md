@@ -24,7 +24,7 @@ To run the application, you must have the following:
 To install the application, run the following command:
 
 
-go install [github.com/](https://github.com/)[your-username]/todo-list
+go install [github.com/](https://github.com/)BatuhanYigit/todo-list
 ```
 
 ## Usage
